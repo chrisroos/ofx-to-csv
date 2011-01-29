@@ -1,6 +1,10 @@
 var Columns = 6;
 var Debug   = true;
 
+function logError(message) {
+  Logger.log('ERROR: ' + message);
+};
+
 function logInfo(message) {
   Logger.log('INFO: ' + message);
 };
@@ -62,8 +66,19 @@ function removeDuplicates() {
     var duplicateTransaction = duplicateTransactions(tran1, tran2);
     
     if (duplicateTransaction) {
-      Logger.log('Deleting row ' + thisRow);
-      transactions.deleteRow(thisRow);
+      var tran1Note = transactions.getRange(thisRow, Columns+1, 1, 1).getValue();
+      var tran2Note = transactions.getRange(prevRow, Columns+1, 1, 1).getValue();
+      if (tran1Note && tran2Note) {
+        var msg = 'Rows ' + prevRow + ' and ' + thisRow + ' contain duplicate data but both contain a note.';
+        msg += 'Remove one of the notes before running the script again.';
+        logError(msg);
+      } else if (tran1Note) {
+        logInfo('Deleting row ' + prevRow);
+        transactions.deleteRow(prevRow);
+      } else {
+        logInfo('Deleting row ' + thisRow);
+        transactions.deleteRow(thisRow);
+      };
     };
   };
 };

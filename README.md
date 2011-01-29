@@ -4,6 +4,5 @@ My bank, HSBC, offers an OFX (and QIF) download.  I want to play around with sto
 
 ## TODO
 
-* Add a note columns to the spreadsheet
-* Don't delete if the transaction contains a note
+* Make it clearer (e.g. highlight rows) that duplicate rows both contain a note - at the moment it just logs which isn't very obvious
 * Add tests around the remove-duplicates.js
