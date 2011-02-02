@@ -34,6 +34,10 @@ function clearBackgroundColours() {
   transactions.getDataRange().setBackgroundRGB(255, 255, 255);
 };
 
+function sortByTransactionId(transactions) {
+  transactions.sort(2, true);
+};
+
 function duplicateTransactions(tran1, tran2) {
   logDebug(tran1);
   logDebug(tran2);
@@ -60,8 +64,7 @@ function duplicateTransactions(tran1, tran2) {
 function eachDuplicate(transactions, callback) {
   var numberOfRows = transactions.getLastRow();
   
-  // Sort by Transaction ID
-  transactions.sort(2, true);
+  sortByTransactionId(transactions);
   
   // Reverse loop through transactions and delete duplicates
   for (var rowIndex = numberOfRows; rowIndex > 1; rowIndex--) {
