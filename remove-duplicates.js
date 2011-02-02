@@ -1,6 +1,15 @@
 var Columns = 6;
 var Debug   = true;
 
+function onOpen() {  
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var menuEntries = [];
+  
+  menuEntries.push({name: "Show duplicates", functionName: "showDuplicates"});
+  menuEntries.push({name: "Remove duplicates", functionName: "removeDuplicates"});
+  spreadsheet.addMenu("Transactions", menuEntries);
+}
+
 function logError(message) {
   Logger.log('ERROR: ' + message);
 };
@@ -16,6 +25,13 @@ function logDebug(message) {
 
 function formatDate(date) {
   return Utilities.formatDate(date, "GMT", "yyyy-MM-dd'T'HH:mm:ss'Z'");
+};
+
+function clearBackgroundColours() {
+  var spreadsheet  = SpreadsheetApp.getActiveSpreadsheet();
+  var transactions = spreadsheet.getSheetByName('transactions');
+  
+  transactions.getDataRange().setBackgroundRGB(255, 255, 255);
 };
 
 function duplicateTransactions(tran1, tran2) {
@@ -41,10 +57,7 @@ function duplicateTransactions(tran1, tran2) {
   return duplicateTransaction;
 };
   
-function removeDuplicates() {
-  var spreadsheet  = SpreadsheetApp.getActiveSpreadsheet();
-  var transactions = spreadsheet.getSheetByName('transactions');
-  
+function eachDuplicate(transactions, callback) {
   var numberOfRows = transactions.getLastRow();
   
   // Sort by Transaction ID
@@ -66,20 +79,54 @@ function removeDuplicates() {
     var duplicateTransaction = duplicateTransactions(tran1, tran2);
     
     if (duplicateTransaction) {
-      var tran1Note = transactions.getRange(thisRow, Columns+1, 1, 1).getValue();
-      var tran2Note = transactions.getRange(prevRow, Columns+1, 1, 1).getValue();
-      if (tran1Note && tran2Note) {
-        var msg = 'Rows ' + prevRow + ' and ' + thisRow + ' contain duplicate data but both contain a note.';
-        msg += 'Remove one of the notes before running the script again.';
-        logError(msg);
-      } else if (tran1Note) {
-        logInfo('Deleting row ' + prevRow);
-        transactions.deleteRow(prevRow);
-      } else {
-        logInfo('Deleting row ' + thisRow);
-        transactions.deleteRow(thisRow);
-      };
+      callback(thisRow, prevRow);
     };
   };
+};
+  
+function removeDuplicates() {
+  var spreadsheet  = SpreadsheetApp.getActiveSpreadsheet();
+  var transactions = spreadsheet.getSheetByName('transactions');
+  
+  eachDuplicate(transactions, function(thisRow, prevRow) {
+    var tran1Note = transactions.getRange(thisRow, Columns+1, 1, 1).getValue();
+    var tran2Note = transactions.getRange(prevRow, Columns+1, 1, 1).getValue();
+    if (tran1Note && tran2Note) {
+      var msg = 'Rows ' + prevRow + ' and ' + thisRow + ' contain duplicate data but both contain a note.';
+      msg += 'Remove one of the notes before running the script again.';
+      logError(msg);
+    } else if (tran1Note) {
+      logInfo('Deleting row ' + prevRow);
+      transactions.deleteRow(prevRow);
+    } else {
+      logInfo('Deleting row ' + thisRow);
+      transactions.deleteRow(thisRow);
+    };
+  });
+};
+
+function showDuplicates() {
+  var spreadsheet  = SpreadsheetApp.getActiveSpreadsheet();
+  var transactions = spreadsheet.getSheetByName('transactions');
+  
+  clearBackgroundColours();
+  
+  eachDuplicate(transactions, function(thisRow, prevRow) {
+    var lastColumn = transactions.getLastColumn();
+    var tran1Note = transactions.getRange(thisRow, Columns+1, 1, 1).getValue();
+    var tran2Note = transactions.getRange(prevRow, Columns+1, 1, 1).getValue();
+    if (tran1Note && tran2Note) {
+      var range = transactions.getRange(prevRow, 1, 1, lastColumn);
+      range.setBackgroundRGB(255, 255, 0);
+      var range = transactions.getRange(thisRow, 1, 1, lastColumn);
+      range.setBackgroundRGB(255, 255, 0);
+    } else if (tran1Note) {
+      var range = transactions.getRange(prevRow, 1, 1, lastColumn);
+      range.setBackgroundRGB(189, 230, 225);
+    } else {
+      var range = transactions.getRange(thisRow, 1, 1, lastColumn);
+      range.setBackgroundRGB(189, 230, 225);
+    };
+  });
 };
 ​
