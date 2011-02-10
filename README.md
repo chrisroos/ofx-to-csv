@@ -6,3 +6,6 @@ My bank, HSBC, offers an OFX (and QIF) download.  I want to play around with sto
 
 * Make it clearer (e.g. highlight rows) that duplicate rows both contain a note - at the moment it just logs which isn't very obvious
 * Add tests around the remove-duplicates.js
+* Add function to set-up spreadsheet
+  - Add headers, freeze row, name sheet etc
+* Work out how to publish the utility
